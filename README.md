@@ -1,24 +1,38 @@
 # CooccurrenceAffinity
 
-***** NOTICE ABOUT MAJOR UPDATES ******
 
-Feb 6, 2023: We are pleased to inform you that the interaction issue between our package and BiasedUrn v2.0.8 has been resolved in the latest version, BiasedUrn v2.0.9. We kindly request that you remove any previous versions of BiasedUrn and install v2.0.9 to ensure proper operation of the CooccurrenceAffinity package. We extend our heartfelt thanks to Agner Fox for promptly updating BiasedUrn and addressing these important issues.
+**Short summary**
 
-Jan 27, 2023: After inspecting this issue <https://github.com/kpmainali/CooccurrenceAffinity/issues/6>, we have discovered that the recent revision of our dependency package BiasedUrn is causing R to crash occasionally while running CooccurrenceAffinity. We are actively working to resolve this issue from within our package. In the meantime, we strongly advise against updating BiasedUrn to version 2.0.8. If you have already upgraded, we recommend removing this version and installing the prior version 1.07 as a temporary solution. We will provide updates as soon as the issue is resolved.
+An R package for computing affinity metrics between co-occurring entities using presence/absence data. Key functions include:
 
-Nov 4, 2022: We have now completed writing the package manuscript which also serves as the vignette. A preprint version of the package manuscript is available here: https://www.biorxiv.org/content/10.1101/2022.11.01.514801v1
+- `affinity(data, row.or.col, ...)`: compute pairwise affinity statistics (MLE of alpha, expected co-occurrence, p-values, and optional square matrices) from presence/absence data
+- `AlphInts(x, mA_mB_N, lev, pvalType, ...)`: calculate various confidence intervals for alpha, including conservative (Clopper–Pearson, Blaker) and mid-P methods
+- `ML.Alpha(x, mA_mB_N, lev, ...)`: compute the maximum likelihood estimate of alpha and related likelihood-based metrics for co-occurrence counts
+- `plotgg(data, variable, legendlimit, ...)`: create configurable ggplot2 heatmaps of affinity outputs with customizable legends, text size, and color scales
 
-Sept 23, 2022: CovrgPlot() has been revised to generate multipanel plot.
 
-Jul 12, 2022: We added a new function minmaxAlpha.pFNCH(). Without this function, BiasedUrn::pFNCHHypergeo() returns inconsistency message for extreme examples like: AlphInts(20,c(204,269,2016), lev=0.9, scal=10). This problem is solved within our package by restricting the range of allowed alpha to the computed (alphmin, alphmax) range.
+**Quick install & start**
 
-Mar 18, 2022: An error was inadvertently introduced in ML.Alpha() in early March that affected computation of upper bound of Alpha MLE. The error was fixed on March 18, 2022. CooccurrenceAffinity package installed prior to March 18, 2022 should be removed and a new version currently available should be reinstalled for it to function properly.
+The library can be installed from CRAN or GitHub.
 
-Feb-Mar 2022: In Feb and early March (until March 4) of 2022, the existing functions were substantially revised for their description, examples and sometimes even for their arguments. Now, we have also added several new functions to analyze binary presence/absence matrix as well as to make plots. This page gives some examples of data analysis. More examples can be found at the function documentation page. 
+```
+# CRAN version
+install.packages("CooccurrenceAffinity")
+library(CooccurrenceAffinity)
 
-Dec 2021: This package was released with a basic set of functions in Dec 2021. 
+# Load example data and compute affinity
+data(finches)
+res <- affinity(data = finches, row.or.col = "col")
+CovrgPlot(marg = c(50,70,150), lev = 0.95)
+plotgg(data = res, variable = "alpha_mle", legendlimit = "balanced")
+```
 
---------------------------------------
+
+
+<details>
+  <summary>🔍 **Extended package description**</summary>
+
+
 
 
 This package computes affinity between two entities based on their co-occurrence (using binary presence/absence data). 
@@ -60,7 +74,7 @@ If the mA or mB value is equal to 0 or N in the inputs to the package functions,
 ## Recommendation on CI
 Four confidence intervals for alpha are calculated in AlphInts() and ML.Alpha(); see Mainali and Slud (2022) for additional details. Two are conservative (CI.CP and CI.Blaker) and two (CI.midP and CI.midQ) are designed to have coverage probability generally closer to the nominal confidence level at the cost of occasional undercoverage. The CI.Blaker interval is highly recommended when a conservative interval is desired, and the CI.midP interval otherwise. However, only one p-value is computed: when pval="Blaker", the p-value is calculated according to the Blaker "Acceptability" function to be compatible with the CI.Blaker confidence interval; and otherwise the p-value is calculated to correspond to the CI.midP confidence interval. Just as it would be a statistical error to choose among the confidence intervals after calculating all of them, so it would also be an error to decide a method of p-value calculation after seeing multiple p-value types. For this reason we provide only one p-value, calculated using the same idea as one of our preferred confidence intervals according to the user's choice of the input parameter "pval".
 
-# References
+## References
 
 Agresti, A. (2013) Categorical Data Analysis, 3rd edition, Wiley.
 
@@ -76,19 +90,11 @@ Mainali, K., Slud, E., Singer, M. and Fagan, B. (2021), “A better index for an
 
 Mainali, K. P., & Slud, E. (2022). CooccurrenceAffinity: An R package for computing a novel metric of affinity in co-occurrence data that corrects for pervasive errors in traditional indices. BioRxiv, 2022.11.01.514801. https://doi.org/10.1101/2022.11.01.514801
 
-# Installation
-
-The library can be installed from GitHub with devtools:
-
-```
-require(devtools)
-install_github("kpmainali/CooccurrenceAffinity")
-```
 
 
-# Some examples of the usage of the functions and illustrations
+## Some examples of the usage of the functions and illustrations
 
-## 2x2 contingency table of counts
+### 2x2 Contingency Table of Counts
 
 <img width="400" alt="2x2 contingency table of counts" src="https://user-images.githubusercontent.com/14167540/156708618-3a2bdee4-f437-4a01-8743-6e2479c8b035.png">
 
@@ -135,7 +141,7 @@ $Flag                              ## indicates MLE  falls in MedianIntrvl
                                    ## later output arguments same as AlphInts()
 ```
 
-## species/entity by site occupancy table
+### Species/Entity by Site Occupancy Table
 
 <img width="400" alt="species by sites table" src="https://user-images.githubusercontent.com/14167540/156708652-5dea30e1-7522-4bc7-a597-49f3542ced63.png">
 
@@ -143,7 +149,6 @@ If you have an actual occurrence dataset where your entity of interest (e.g., sp
 
 ```
 > # load the binary presence/absence or abundance data
-> require(cooccur)
 > data(finches)
 > head(finches)
                       Seymour Baltra Isabella Fernandina Santiago Rabida Pinzon
@@ -186,7 +191,7 @@ Geospiza conirostris         0     0      0    0
 
 
 
-# median interval vs conﬁdence interval
+## Median Interval vs Conﬁdence Interval
 
 To illustrate the relative sizes of the median interval and conﬁdence interval and their positioning with respect to MLE, we supply code to plot the point and interval estimates for X values from 1 to 49 on a single graph, in Figure 1. The graph is chopped oﬀ at α = ±5 for clarity. The maximum absolute value of log(2N^2) in this instance is 10.7. 
 
@@ -208,3 +213,12 @@ for(i in 1:49) {
 points(1:49,CIs[,3], pch=20) 
 legend(10,3, legend=c("CI interval","med interval","MLE"), pch=c(NA,NA,20), lwd=c(2,4,NA), col=c("blue","red","black"))
 ```
+
+
+
+</details>
+
+
+
+
+
